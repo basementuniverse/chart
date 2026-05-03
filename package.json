@@ -1,6 +1,6 @@
 {
   "name": "@basementuniverse/chart",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Tiny library for quickly rendering a chart on a canvas.",
   "main": "build/index.js",
   "scripts": {
@@ -9,10 +9,6 @@
   },
   "author": "gordon",
   "license": "MIT",
-  "dependencies": {
-    "@basementuniverse/utils": "^1.8.1",
-    "@basementuniverse/vec": "^2.5.0"
-  },
   "devDependencies": {
     "@types/node": "^18.11.12",
     "clean-webpack-plugin": "^4.0.0-alpha.0",

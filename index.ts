@@ -1,5 +1,18 @@
-import { clamp, range, remap, round } from '@basementuniverse/utils';
-import { vec2 } from '@basementuniverse/vec';
+const times = (f: Function, n: number) =>
+  Array(n)
+    .fill(0)
+    .map((_, i) => f(i));
+const range = (n: number) => times((i: number) => i, n);
+const clamp = (a: number, min = 0, max = 1) =>
+  a < min ? min : a > max ? max : a;
+const remap = (i: number, a1: number, a2: number, b1: number, b2: number) =>
+  b1 + ((i - a1) * (b2 - b1)) / (a2 - a1);
+const round = (n: number, d = 0) => {
+  const p = Math.pow(10, d);
+  return Math.round(n * p + Number.EPSILON) / p;
+};
+
+type vec2 = { x: number; y: number };
 
 export type ChartType = 'line' | 'area' | 'bar' | 'scatter';
 export type PrimitiveX = number | Date | string;
@@ -40,6 +53,19 @@ export type AxisOptions = {
   range?: AxisRange;
 };
 
+export type AxisStyle = {
+  axisColor?: string;
+  axisWidth?: number;
+  gridColor?: string;
+  gridWidth?: number;
+  tickColor?: string;
+  tickWidth?: number;
+  tickLength?: number;
+  labelColor?: string;
+  labelFont?: string;
+  labelOffset?: number;
+};
+
 export type ChartTitle = {
   text: string;
   color?: string;
@@ -65,6 +91,7 @@ export type ChartOptions = {
   series: Series[];
   xAxis: AxisOptions;
   yAxis: AxisOptions;
+  axisStyle: AxisStyle;
   title?: ChartTitle;
 };
 
@@ -109,20 +136,18 @@ type PlotRect = {
 };
 
 const DEFAULT_COLORS = [
-  '#1f77b4',
-  '#ff7f0e',
-  '#2ca02c',
-  '#d62728',
-  '#9467bd',
-  '#8c564b',
-  '#e377c2',
-  '#7f7f7f',
-  '#bcbd22',
-  '#17becf',
+  '#FA6868',
+  '#71BEA0',
+  '#5A9CB5',
+  '#FAAC68',
+  '#609B8F',
+  '#2C4E80',
+  '#FACE68',
+  '#624E88',
 ];
 
 const DEFAULT_CHART_OPTIONS: ChartOptions = {
-  position: vec2(),
+  position: { x: 0, y: 0 },
   size: null,
   padding: { top: 24, right: 16, bottom: 32, left: 44 },
   pixelRatio: 1,
@@ -149,6 +174,18 @@ const DEFAULT_CHART_OPTIONS: ChartOptions = {
       nice: true,
       includeZero: false,
     },
+  },
+  axisStyle: {
+    axisColor: '#6b7280',
+    axisWidth: 1,
+    gridColor: '#e5e7eb',
+    gridWidth: 1,
+    tickColor: '#9ca3af',
+    tickWidth: 1,
+    tickLength: 4,
+    labelColor: '#4b5563',
+    labelFont: '12px sans-serif',
+    labelOffset: 8,
   },
 };
 
@@ -215,9 +252,14 @@ function resolveOptions(options: Partial<ChartOptions>): ChartOptions {
     ...DEFAULT_CHART_OPTIONS,
     ...options,
     position: options.position
-      ? vec2(options.position)
-      : vec2(DEFAULT_CHART_OPTIONS.position),
-    size: options.size ? vec2(options.size) : DEFAULT_CHART_OPTIONS.size,
+      ? { x: options.position.x, y: options.position.y }
+      : {
+          x: DEFAULT_CHART_OPTIONS.position.x,
+          y: DEFAULT_CHART_OPTIONS.position.y,
+        },
+    size: options.size
+      ? { x: options.size.x, y: options.size.y }
+      : DEFAULT_CHART_OPTIONS.size,
     colors:
       options.colors && options.colors.length > 0
         ? options.colors
@@ -231,6 +273,10 @@ function resolveOptions(options: Partial<ChartOptions>): ChartOptions {
       ...DEFAULT_CHART_OPTIONS.yAxis,
       ...(options.yAxis ?? {}),
       range: yAxisRange,
+    },
+    axisStyle: {
+      ...DEFAULT_CHART_OPTIONS.axisStyle,
+      ...(options.axisStyle ?? {}),
     },
     series: options.series ?? DEFAULT_CHART_OPTIONS.series,
   };
@@ -613,6 +659,7 @@ function drawAxes(
   yDomain: Domain,
   xAxis: AxisOptions,
   yAxis: AxisOptions,
+  axisStyle: AxisStyle,
   toCanvasX: (x: number) => number,
   toCanvasY: (y: number) => number
 ): void {
@@ -621,15 +668,25 @@ function drawAxes(
       ? sampleCategoryTicks(categories, xAxis.ticks ?? 6)
       : makeTicks(xDomain, xAxis.ticks ?? 6);
   const yTicks = makeTicks(yDomain, yAxis.ticks ?? 6);
+  const axisColor = axisStyle.axisColor ?? '#6b7280';
+  const axisWidth = axisStyle.axisWidth ?? 1;
+  const gridColor = axisStyle.gridColor ?? '#e5e7eb';
+  const gridWidth = axisStyle.gridWidth ?? 1;
+  const tickColor = axisStyle.tickColor ?? '#9ca3af';
+  const tickWidth = axisStyle.tickWidth ?? 1;
+  const tickLength = axisStyle.tickLength ?? 4;
+  const labelColor = axisStyle.labelColor ?? '#4b5563';
+  const labelFont = axisStyle.labelFont ?? '12px sans-serif';
+  const labelOffset = axisStyle.labelOffset ?? 8;
 
   context.save();
-  context.strokeStyle = '#9ca3af';
-  context.fillStyle = '#374151';
-  context.lineWidth = 1;
-  context.font = '12px sans-serif';
+  context.strokeStyle = tickColor;
+  context.lineWidth = tickWidth;
+  context.font = labelFont;
 
   if (yAxis.grid) {
-    context.strokeStyle = '#e5e7eb';
+    context.strokeStyle = gridColor;
+    context.lineWidth = gridWidth;
     for (const value of yTicks) {
       const y = toCanvasY(value);
       context.beginPath();
@@ -640,7 +697,8 @@ function drawAxes(
   }
 
   if (xAxis.grid) {
-    context.strokeStyle = '#f3f4f6';
+    context.strokeStyle = gridColor;
+    context.lineWidth = gridWidth;
     for (const value of xTicks) {
       const x = toCanvasX(value);
       context.beginPath();
@@ -650,7 +708,8 @@ function drawAxes(
     }
   }
 
-  context.strokeStyle = '#6b7280';
+  context.strokeStyle = axisColor;
+  context.lineWidth = axisWidth;
   if (xAxis.show) {
     context.beginPath();
     context.moveTo(plotRect.x, plotRect.y + plotRect.height);
@@ -665,7 +724,30 @@ function drawAxes(
     context.stroke();
   }
 
-  context.fillStyle = '#4b5563';
+  context.strokeStyle = tickColor;
+  context.lineWidth = tickWidth;
+  if (yAxis.show && tickLength > 0) {
+    for (const value of yTicks) {
+      const y = toCanvasY(value);
+      context.beginPath();
+      context.moveTo(plotRect.x, y);
+      context.lineTo(plotRect.x - tickLength, y);
+      context.stroke();
+    }
+  }
+
+  if (xAxis.show && tickLength > 0) {
+    const axisY = plotRect.y + plotRect.height;
+    for (const value of xTicks) {
+      const x = toCanvasX(value);
+      context.beginPath();
+      context.moveTo(x, axisY);
+      context.lineTo(x, axisY + tickLength);
+      context.stroke();
+    }
+  }
+
+  context.fillStyle = labelColor;
   context.textBaseline = 'middle';
   context.textAlign = 'right';
 
@@ -674,7 +756,7 @@ function drawAxes(
     const label = yAxis.formatter
       ? yAxis.formatter(value)
       : defaultFormatNumber(value);
-    context.fillText(label, plotRect.x - 8, y);
+    context.fillText(label, plotRect.x - (tickLength + labelOffset), y);
   }
 
   context.textAlign = 'center';
@@ -700,7 +782,11 @@ function drawAxes(
         : defaultFormatNumber(value);
     }
 
-    context.fillText(label, x, plotRect.y + plotRect.height + 8);
+    context.fillText(
+      label,
+      x,
+      plotRect.y + plotRect.height + tickLength + labelOffset
+    );
   }
 
   context.restore();
@@ -1064,6 +1150,7 @@ export function drawChart(
     yDomain,
     resolved.xAxis,
     resolved.yAxis,
+    resolved.axisStyle,
     scales.toClampedCanvasX,
     scales.toClampedCanvasY
   );

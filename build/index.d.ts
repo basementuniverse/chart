@@ -1,4 +1,7 @@
-import { vec2 } from '@basementuniverse/vec';
+type vec2 = {
+    x: number;
+    y: number;
+};
 export type ChartType = 'line' | 'area' | 'bar' | 'scatter';
 export type PrimitiveX = number | Date | string;
 export type XScaleKind = 'linear' | 'time' | 'category';
@@ -32,6 +35,18 @@ export type AxisOptions = {
     formatter?: (value: number | string | Date) => string;
     range?: AxisRange;
 };
+export type AxisStyle = {
+    axisColor?: string;
+    axisWidth?: number;
+    gridColor?: string;
+    gridWidth?: number;
+    tickColor?: string;
+    tickWidth?: number;
+    tickLength?: number;
+    labelColor?: string;
+    labelFont?: string;
+    labelOffset?: number;
+};
 export type ChartTitle = {
     text: string;
     color?: string;
@@ -55,6 +70,7 @@ export type ChartOptions = {
     series: Series[];
     xAxis: AxisOptions;
     yAxis: AxisOptions;
+    axisStyle: AxisStyle;
     title?: ChartTitle;
 };
 export type DrawChartResult = {

@@ -1,398 +1,265 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>@basementuniverse/chart demo</title>
-		<style>
-			:root {
-				--bg: #f7f4ee;
-				--ink: #1f2937;
-				--muted: #6b7280;
-				--card: #fffef9;
-				--stroke: #e5dccd;
-				--accent: #146356;
-			}
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>@basementuniverse/chart demos</title>
+	<style>
+		body {
+			margin: 24px;
+			font-family: sans-serif;
+		}
 
-			* {
-				box-sizing: border-box;
-			}
+		h2 {
+			margin: 20px 0 8px;
+			font-size: 16px;
+			font-weight: 600;
+		}
 
-			body {
-				margin: 0;
-				padding: 24px;
-				font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
-				color: var(--ink);
-				background:
-					radial-gradient(circle at 8% 12%, #fff3cc 0, transparent 38%),
-					radial-gradient(circle at 94% 84%, #d9efe8 0, transparent 44%),
-					var(--bg);
-			}
+		canvas {
+			display: block;
+			margin: 0 0 24px;
+			border: 1px solid #000;
+		}
+	</style>
+</head>
+<body>
+	<h2>1. Line chart with number[] shorthand</h2>
+	<canvas id="line-numbers" width="720" height="260"></canvas>
 
-			.wrap {
-				margin: 0 auto;
-				max-width: 1200px;
-			}
+	<h2>2. Area chart with null gaps</h2>
+	<canvas id="area-null-gaps" width="720" height="260"></canvas>
 
-			h1 {
-				margin: 0;
-				font-family: "Fraunces", "Georgia", serif;
-				font-size: clamp(1.8rem, 2.8vw, 2.8rem);
-				line-height: 1.12;
-				letter-spacing: 0.01em;
-			}
+	<h2>3. Bar chart with category labels ({ x, y }[])</h2>
+	<canvas id="bar-categories" width="720" height="260"></canvas>
 
-			.lead {
-				max-width: 70ch;
-				margin: 10px 0 20px;
-				color: var(--muted);
-			}
+	<h2>4. Scatter chart with explicit numeric range</h2>
+	<canvas id="scatter-range" width="720" height="260"></canvas>
 
-			.note {
-				padding: 12px 14px;
-				border-radius: 10px;
-				border: 1px solid var(--stroke);
-				background: #fff;
-				color: #374151;
-				font-size: 0.94rem;
-			}
+	<h2>5. Mixed series types in one chart</h2>
+	<canvas id="mixed-types" width="720" height="280"></canvas>
 
-			.grid {
-				margin-top: 18px;
-				display: grid;
-				gap: 14px;
-				grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-			}
+	<h2>6. Time-series points ({ x: Date, y }[])</h2>
+	<canvas id="time-series" width="720" height="260"></canvas>
 
-			.card {
-				border: 1px solid var(--stroke);
-				border-radius: 14px;
-				padding: 14px;
-				background: var(--card);
-				box-shadow: 0 8px 24px rgba(31, 41, 55, 0.05);
-			}
+	<h2>7. Axis styling and custom label formatters</h2>
+	<canvas id="styled-axis" width="720" height="260"></canvas>
 
-			.card h2 {
-				margin: 0 0 4px;
-				font-size: 1rem;
-			}
+	<script src="build/index.js"></script>
+	<script>
+		const drawChart = window.drawChart || window.default;
 
-			.card p {
-				margin: 0 0 10px;
-				color: var(--muted);
-				font-size: 0.9rem;
-			}
+		function ctx(id) {
+			return document.getElementById(id).getContext('2d');
+		}
 
-			canvas {
-				width: 100%;
-				height: auto;
-				display: block;
-				border-radius: 10px;
-				border: 1px solid #efe6d9;
-				background: #fff;
-			}
+		drawChart(ctx('line-numbers'), {
+			type: 'line',
+			title: { text: 'Visits per Day' },
+			series: [
+				{
+					name: 'Visits',
+					data: [12, 18, 16, 24, 31, 28, 35],
+				},
+			],
+		});
 
-			.status {
-				margin-top: 14px;
-				color: #b91c1c;
-				font-size: 0.9rem;
-				min-height: 1.1rem;
-			}
-
-			a {
-				color: var(--accent);
-			}
-
-			@media (max-width: 640px) {
-				body {
-					padding: 14px;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<main class="wrap">
-			<h1>@basementuniverse/chart demo harness</h1>
-			<p class="lead">
-				This page demonstrates v1 features: multiple chart types, shorthand and explicit series data,
-				category and time x values, mixed chart overlays, manual axis ranges, titles, and custom
-				formatters.
-			</p>
-			<div class="note">
-				Build first with <strong>npm run build</strong>, then open this file in a browser.
-				It loads <code>./build/index.js</code> directly.
-			</div>
-
-			<section class="grid">
-				<article class="card">
-					<h2>1) Line chart with shorthand data</h2>
-					<p>Simple number arrays, default x=index mapping.</p>
-					<canvas id="chart-quick" width="520" height="280"></canvas>
-				</article>
-
-				<article class="card">
-					<h2>2) Category bar chart with explicit points</h2>
-					<p>String x values become category axis labels.</p>
-					<canvas id="chart-category" width="520" height="280"></canvas>
-				</article>
-
-				<article class="card">
-					<h2>3) Time series line/area with Date x</h2>
-					<p>Explicit Date x points with custom date label formatter.</p>
-					<canvas id="chart-time" width="520" height="280"></canvas>
-				</article>
-
-				<article class="card">
-					<h2>4) Mixed types in one chart</h2>
-					<p>Bar + line + scatter overlays with numeric x points.</p>
-					<canvas id="chart-mixed" width="520" height="280"></canvas>
-				</article>
-
-				<article class="card" style="grid-column: 1 / -1">
-					<h2>5) Manual ranges, title, and custom styling</h2>
-					<p>Explicit x/y ranges, background fill, and label formatters.</p>
-					<canvas id="chart-ranged" width="1060" height="320"></canvas>
-				</article>
-			</section>
-
-			<div class="status" id="status"></div>
-		</main>
-
-		<script src="./build/index.js"></script>
-		<script>
-			(function () {
-				const status = document.getElementById('status');
-				const drawChart = window.default;
-
-				if (typeof drawChart !== 'function') {
-					status.textContent = 'Could not load drawChart from ./build/index.js. Run npm run build first.';
-					return;
-				}
-
-				const getContext = (id) => {
-					const canvas = document.getElementById(id);
-					if (!canvas) {
-						throw new Error(`Canvas not found: ${id}`);
-					}
-
-					const context = canvas.getContext('2d');
-					if (!context) {
-						throw new Error(`Could not get 2D context: ${id}`);
-					}
-
-					return context;
-				};
-
-				const shortDate = (value) => {
-					if (value instanceof Date) {
-						return value.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-					}
-
-					return `${value}`;
-				};
-
-				const today = new Date('2026-03-01T00:00:00.000Z');
-				const days = (offset) => new Date(today.getTime() + offset * 24 * 60 * 60 * 1000);
-
-				drawChart(getContext('chart-quick'), {
-					title: { text: 'Traffic (quick shorthand)', align: 'left' },
-					type: 'line',
-					series: [
-						{ name: 'Visits', data: [12, 18, 16, 24, 31, 28, 35, 38, 34] },
-						{ name: 'Signups', data: [3, 5, 4, 6, 8, 7, 9, 10, 9], color: '#d97706' },
+		drawChart(ctx('area-null-gaps'), {
+			type: 'area',
+			title: { text: 'Area Series with Missing Values' },
+			series: [
+				{
+					name: 'Load',
+					data: [
+						{ x: 0, y: 8 },
+						{ x: 1, y: 11 },
+						{ x: 2, y: null },
+						{ x: 3, y: 15 },
+						{ x: 4, y: 13 },
+						{ x: 5, y: null },
+						{ x: 6, y: 18 },
+						{ x: 7, y: 16 },
 					],
-					yAxis: {
-						ticks: 5,
-					},
-				});
+				},
+			],
+			yAxis: {
+				range: {
+					includeZero: true,
+				},
+			},
+		});
 
-				drawChart(getContext('chart-category'), {
-					title: { text: 'Revenue by month', align: 'left' },
+		drawChart(ctx('bar-categories'), {
+			type: 'bar',
+			title: { text: 'Monthly Revenue' },
+			series: [
+				{
+					name: '2026',
+					data: [
+						{ x: 'Jan', y: 120 },
+						{ x: 'Feb', y: 132 },
+						{ x: 'Mar', y: 126 },
+						{ x: 'Apr', y: 145 },
+						{ x: 'May', y: 151 },
+					],
+					color: '#d9480f',
+					fill: 'rgba(217, 72, 15, 0.35)',
+				},
+			],
+			yAxis: {
+				formatter: function (value) {
+					return '$' + value + 'k';
+				},
+			},
+		});
+
+		drawChart(ctx('scatter-range'), {
+			type: 'scatter',
+			title: { text: 'Experiment Results' },
+			series: [
+				{
+					name: 'Run A',
+					pointRadius: 5,
+					color: '#0b7285',
+					fill: 'rgba(11, 114, 133, 0.4)',
+					data: [
+						{ x: 0, y: 12 },
+						{ x: 5, y: 16 },
+						{ x: 10, y: 20 },
+						{ x: 15, y: 18 },
+						{ x: 20, y: 24 },
+					],
+				},
+			],
+			xAxis: {
+				range: { min: 0, max: 25 },
+			},
+			yAxis: {
+				range: { min: 0, max: 30 },
+			},
+		});
+
+		drawChart(ctx('mixed-types'), {
+			title: { text: 'Mixed: Bars + Line + Scatter' },
+			series: [
+				{
 					type: 'bar',
-					series: [
-						{
-							name: '2025',
-							type: 'bar',
-							data: [
-								{ x: 'Jan', y: 128 },
-								{ x: 'Feb', y: 132 },
-								{ x: 'Mar', y: 119 },
-								{ x: 'Apr', y: 146 },
-								{ x: 'May', y: 151 },
-								{ x: 'Jun', y: 143 },
-							],
-						},
-						{
-							name: '2026',
-							type: 'bar',
-							color: '#0f766e',
-							fill: 'rgba(15, 118, 110, 0.25)',
-							data: [
-								{ x: 'Jan', y: 136 },
-								{ x: 'Feb', y: 141 },
-								{ x: 'Mar', y: 134 },
-								{ x: 'Apr', y: 153 },
-								{ x: 'May', y: 160 },
-								{ x: 'Jun', y: 157 },
-							],
-						},
+					name: 'Signups',
+					data: [
+						{ x: 'Mon', y: 20 },
+						{ x: 'Tue', y: 25 },
+						{ x: 'Wed', y: 23 },
+						{ x: 'Thu', y: 29 },
+						{ x: 'Fri', y: 32 },
 					],
-					yAxis: {
-						ticks: 5,
-						formatter: (value) => `$${Math.round(Number(value))}k`,
-					},
-				});
-
-				drawChart(getContext('chart-time'), {
-					title: { text: 'Temperature (Date x values)', align: 'left' },
-					series: [
-						{
-							name: 'Low',
-							type: 'area',
-							color: '#1d4ed8',
-							fill: 'rgba(29, 78, 216, 0.16)',
-							data: [
-								{ x: days(0), y: 6 },
-								{ x: days(1), y: 5 },
-								{ x: days(2), y: 8 },
-								{ x: days(3), y: null },
-								{ x: days(4), y: 7 },
-								{ x: days(5), y: 9 },
-								{ x: days(6), y: 8 },
-							],
-						},
-						{
-							name: 'High',
-							type: 'line',
-							color: '#dc2626',
-							data: [
-								{ x: days(0), y: 14 },
-								{ x: days(1), y: 13 },
-								{ x: days(2), y: 16 },
-								{ x: days(3), y: 15 },
-								{ x: days(4), y: 17 },
-								{ x: days(5), y: 18 },
-								{ x: days(6), y: 17 },
-							],
-						},
+				},
+				{
+					type: 'line',
+					name: 'Trend',
+					data: [
+						{ x: 'Mon', y: 18 },
+						{ x: 'Tue', y: 22 },
+						{ x: 'Wed', y: 24 },
+						{ x: 'Thu', y: 27 },
+						{ x: 'Fri', y: 31 },
 					],
-					xAxis: {
-						ticks: 7,
-						formatter: shortDate,
-					},
-					yAxis: {
-						ticks: 6,
-						formatter: (value) => `${Math.round(Number(value))}C`,
-					},
-				});
-
-				drawChart(getContext('chart-mixed'), {
-					title: { text: 'Mixed chart types', align: 'left' },
-					series: [
-						{
-							name: 'Volume',
-							type: 'bar',
-							color: '#334155',
-							fill: 'rgba(51, 65, 85, 0.2)',
-							data: [
-								{ x: 0, y: 10 },
-								{ x: 1, y: 14 },
-								{ x: 2, y: 13 },
-								{ x: 3, y: 17 },
-								{ x: 4, y: 16 },
-								{ x: 5, y: 20 },
-							],
-						},
-						{
-							name: 'Trend',
-							type: 'line',
-							color: '#7c3aed',
-							width: 2.5,
-							data: [
-								{ x: 0, y: 9 },
-								{ x: 1, y: 11 },
-								{ x: 2, y: 12 },
-								{ x: 3, y: 14 },
-								{ x: 4, y: 15 },
-								{ x: 5, y: 19 },
-							],
-						},
-						{
-							name: 'Samples',
-							type: 'scatter',
-							color: '#059669',
-							fill: 'rgba(5, 150, 105, 0.35)',
-							pointRadius: 4,
-							data: [
-								{ x: 0.3, y: 10.3 },
-								{ x: 1.6, y: 11.6 },
-								{ x: 2.2, y: 13.1 },
-								{ x: 3.1, y: 13.8 },
-								{ x: 4.4, y: 16.2 },
-								{ x: 5.1, y: 19.3 },
-							],
-						},
+				},
+				{
+					type: 'scatter',
+					name: 'Targets',
+					data: [
+						{ x: 'Mon', y: 21 },
+						{ x: 'Tue', y: 21 },
+						{ x: 'Wed', y: 26 },
+						{ x: 'Thu', y: 28 },
+						{ x: 'Fri', y: 30 },
 					],
-					xAxis: {
-						ticks: 6,
-						formatter: (value) => `P${Math.round(Number(value)) + 1}`,
-					},
-				});
+				},
+			],
+			yAxis: {
+				range: {
+					includeZero: true,
+				},
+			},
+		});
 
-				drawChart(getContext('chart-ranged'), {
-					title: {
-						text: 'Explicit ranges + background + custom formatters',
-						align: 'center',
-						color: '#0f172a',
-					},
-					background: '#f8fafc',
-					padding: { top: 30, right: 24, bottom: 34, left: 48 },
-					series: [
-						{
-							name: 'Signal',
-							type: 'line',
-							color: '#be123c',
-							data: [
-								{ x: -20, y: -12 },
-								{ x: -10, y: -5 },
-								{ x: 0, y: 6 },
-								{ x: 10, y: 14 },
-								{ x: 20, y: 11 },
-								{ x: 30, y: 17 },
-								{ x: 40, y: 9 },
-								{ x: 50, y: 21 },
-								{ x: 60, y: 18 },
-							],
-						},
-						{
-							name: 'Projection',
-							type: 'scatter',
-							color: '#0ea5e9',
-							fill: 'rgba(14, 165, 233, 0.28)',
-							pointRadius: 5,
-							data: [
-								{ x: -15, y: -8 },
-								{ x: -5, y: 1 },
-								{ x: 15, y: 12 },
-								{ x: 35, y: 13 },
-								{ x: 55, y: 20 },
-							],
-						},
+		drawChart(ctx('time-series'), {
+			type: 'line',
+			title: { text: 'Temperature (Date x-values)' },
+			series: [
+				{
+					name: 'Temp C',
+					data: [
+						{ x: new Date('2026-01-01'), y: 6 },
+						{ x: new Date('2026-01-02'), y: 8 },
+						{ x: new Date('2026-01-03'), y: 7 },
+						{ x: new Date('2026-01-04'), y: 10 },
+						{ x: new Date('2026-01-05'), y: 9 },
 					],
-					xAxis: {
-						ticks: 9,
-						range: { min: -20, max: 60, padding: 0 },
-						formatter: (value) => `${Math.round(Number(value))} ms`,
-					},
-					yAxis: {
-						ticks: 7,
-						range: { min: -20, max: 25, nice: false, padding: 0 },
-						formatter: (value) => `${Math.round(Number(value))} dB`,
-					},
-				});
+					color: '#1971c2',
+					width: 2,
+				},
+			],
+			xAxis: {
+				ticks: 5,
+				formatter: function (value) {
+					const date = value instanceof Date ? value : new Date(value);
+					return (date.getMonth() + 1) + '/' + date.getDate();
+				},
+			},
+			yAxis: {
+				formatter: function (value) {
+					return value + ' C';
+				},
+			},
+		});
 
-				status.textContent = 'Demo rendered.';
-			})();
-		</script>
-	</body>
+		drawChart(ctx('styled-axis'), {
+			type: 'line',
+			background: '#f8f9fa',
+			padding: { top: 30, right: 22, bottom: 40, left: 52 },
+			title: {
+				text: 'Custom Axis Style',
+				color: '#212529',
+				font: 'bold 15px sans-serif',
+				align: 'center',
+			},
+			axisStyle: {
+				axisColor: '#212529',
+				axisWidth: 1.5,
+				gridColor: '#dee2e6',
+				gridWidth: 1,
+				tickColor: '#343a40',
+				tickWidth: 1,
+				tickLength: 6,
+				labelColor: '#212529',
+				labelFont: '12px monospace',
+				labelOffset: 8,
+			},
+			xAxis: {
+				grid: true,
+				ticks: 7,
+			},
+			yAxis: {
+				grid: true,
+				ticks: 5,
+				formatter: function (value) {
+					return value + '%';
+				},
+				range: {
+					min: 0,
+					max: 100,
+				},
+			},
+			series: [
+				{
+					name: 'Completion',
+					data: [14, 28, 36, 49, 58, 71, 84],
+					color: '#6741d9',
+					width: 2.5,
+				},
+			],
+		});
+	</script>
+</body>
 </html>
