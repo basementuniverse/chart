@@ -1019,7 +1019,7 @@ function toInputXValue(
   return Number(value);
 }
 
-export default function drawChart(
+export function drawChart(
   context: CanvasRenderingContext2D,
   options: Partial<ChartOptions>
 ): DrawChartResult {
@@ -1095,3 +1095,5 @@ export default function drawChart(
     toCanvasY: (y): number => scales.toClampedCanvasY(y),
   };
 }
+
+export default drawChart;

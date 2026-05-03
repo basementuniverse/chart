@@ -77,4 +77,5 @@ export type DrawChartResult = {
     toCanvasX: (x: number | Date | string) => number;
     toCanvasY: (y: number) => number;
 };
-export default function drawChart(context: CanvasRenderingContext2D, options: Partial<ChartOptions>): DrawChartResult;
+export declare function drawChart(context: CanvasRenderingContext2D, options: Partial<ChartOptions>): DrawChartResult;
+export default drawChart;
