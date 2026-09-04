@@ -94,4 +94,4 @@ export type DrawChartResult = {
     toCanvasY: (y: number) => number;
 };
 export declare function drawChart(context: CanvasRenderingContext2D, options: Partial<ChartOptions>): DrawChartResult;
-export default drawChart;
+export {};

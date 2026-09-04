@@ -47,7 +47,10 @@
 
 	<script src="build/index.js"></script>
 	<script>
-		const drawChart = window.drawChart || window.default;
+		const drawChart = window.BasementUniverseChart?.drawChart;
+    if (!drawChart) {
+      throw new Error('Chart library not found!');
+    }
 
 		function ctx(id) {
 			return document.getElementById(id).getContext('2d');

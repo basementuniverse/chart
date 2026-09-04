@@ -2,13 +2,22 @@
   "name": "@basementuniverse/chart",
   "version": "1.0.0",
   "description": "Tiny library for quickly rendering a chart on a canvas.",
+  "author": "Gordon Larrigan <gordonlarrigan@gmail.com> (https://gordonlarrigan.com)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/basementuniverse/chart.git"
+  },
   "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
     "watch": "webpack --watch"
   },
-  "author": "gordon",
-  "license": "MIT",
   "devDependencies": {
     "@types/node": "^18.11.12",
     "clean-webpack-plugin": "^4.0.0-alpha.0",

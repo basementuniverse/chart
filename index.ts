@@ -1182,5 +1182,3 @@ export function drawChart(
     toCanvasY: (y): number => scales.toClampedCanvasY(y),
   };
 }
-
-export default drawChart;
